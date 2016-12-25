@@ -36,7 +36,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       if err == io.EOF {
         break
       }
-      fmt.Printf("Failed to decode msgpack data: %v", err)
+      fmt.Printf("Failed to decode msgpack data: %v\n", err)
       return output.FLB_ERROR
     }
 
@@ -51,17 +51,16 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       // enc_data, err == encode_as_string(m)
     }
     if err != nil {
-      fmt.Printf("Failed to encode %s data: %v", format, err)
+      fmt.Printf("Failed to encode %s data: %v\n", format, err)
       return output.FLB_ERROR
     }
 
     // Send message to kafka
     brokerList := []string{"localhost:9092"}
-    config := sarama.NewConfig()
-    producer, err := sarama.NewSyncProducer(brokerList, config)
+    producer, err := sarama.NewSyncProducer(brokerList, nil)
 
     if err != nil {
-      fmt.Printf("Failed to start Sarama producer: %v", err)
+      fmt.Printf("Failed to start Sarama producer: %v\n", err)
       return output.FLB_ERROR
     }
 
