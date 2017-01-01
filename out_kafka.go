@@ -56,7 +56,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     }
 
     // Send message to kafka
-    brokerList := []string{"localhost:9092"}
+    // brokerList := []string{"localhost:9092"}
+    brokerList := []string{"zk:2181"}
     producer, err := sarama.NewSyncProducer(brokerList, nil)
 
     if err != nil {
