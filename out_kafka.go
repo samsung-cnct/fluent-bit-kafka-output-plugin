@@ -44,7 +44,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     format := "json"
 
     if format == "json" {
-      enc_data, err = encode_as_json(m)
+      // enc_data, err = encode_as_json(m)
+      enc_data, err = m
     } else if format == "msgpack" {
       enc_data, err = encode_as_msgpack(m)
     } else if format == "string" {
