@@ -41,14 +41,14 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     }
 
     // select format until config files are available for fluentbit
-    format := "string"
+    format := "json"
 
     if format == "json" {
       enc_data, err = encode_as_json(m)
     } else if format == "msgpack" {
       enc_data, err = encode_as_msgpack(m)
     } else if format == "string" {
-      enc_data, err == encode_as_string(m)
+      // enc_data, err == encode_as_string(m)
     }
     if err != nil {
       fmt.Printf("Failed to encode %s data: %v\n", format, err)
