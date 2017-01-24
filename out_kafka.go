@@ -44,8 +44,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     format := "json"
 
     if format == "json" {
-      // enc_data, err = encode_as_json(m)
-      enc_data, err = m
+      enc_data, err = encode_as_json(m)
+      //enc_data, err = m
     } else if format == "msgpack" {
       enc_data, err = encode_as_msgpack(m)
     } else if format == "string" {
@@ -95,9 +95,9 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   // convert from map[interface{}] interface{} to map[string] interface{}
   // as JSON encoder can't encode non-string keys
-  record2 := make(map[string] interface{})
+  record2 := make(map[string] string)
   for k, v := range record {
-    record2[k.(string)] = v
+    record2[k.(string)] = v.(string)
   }
 
   // TODO
@@ -105,7 +105,7 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   type Log struct {
     Time uint64
-    Record map[string] interface{}
+    Record map[string] string
   }
 
   log := Log {
