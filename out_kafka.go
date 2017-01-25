@@ -102,12 +102,15 @@ func encode_as_json(m interface {}) ([]byte, error) {
     if val, ok := v.([]byte); ok {
       // convert byte array to string
       v2 := string(val)
+      record2[k.(string)] = v2
       // var i interface{} = "hello"
       // v = i
+    } else {
+      record2[k.(string)] = v
     }
     // str_v := string(v)
     // str_v, _ := string(v.([]byte))
-    record2[k.(string)] = v2
+    // record2[k.(string)] = v2
   }
 
   // TODO
