@@ -98,15 +98,17 @@ func encode_as_json(m interface {}) ([]byte, error) {
   // as JSON encoder can't encode non-string keys
   // record2 := make(map[string] string)
   record2 := make(map[string] interface{})
-  for k, v := range record {
-    if val, ok := v.([]uint8); ok {
+  for _, v := range record {
+    if val, ok := v.([]byte); ok {
       // convert byte array to string
       v2 := string(val)
-      record2[k.(string)] = v2
+      // record2[k.(string)] = v2
+      record2["key"] = v2
       // var i interface{} = "hello"
       // v = i
     } else {
-      record2[k.(string)] = v
+      // record2[k.(string)] = v
+      record2["key"] = v
     }
     // str_v := string(v)
     // str_v, _ := string(v.([]byte))
