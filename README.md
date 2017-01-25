@@ -16,3 +16,5 @@ TODO:
 - Add string and test msgpack encoding
 - Add ability to connect via brokers or zookeeper
 - Add variable to conf file for topic
+- Add variable to conf for kafka brokers
+- Get resource consumption when running in cluster
