@@ -55,15 +55,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       fmt.Printf("Failed to encode %s data: %v\n", format, err)
       return output.FLB_ERROR
     }
-
-    // TODO use zookeeper
-    // zookeeper := zk:2181
-    // 
-
-    // Send message to kafka
-    // brokerList := []string{"localhost:9092"}
-    // brokerList := []string{"kafka:9092"}
-    // brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092, kafka-1.kafka.default.svc.cluster.local:9092, kafka-2.kafka.default.svc.cluster.local:9092"}
     brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
     producer, err := sarama.NewSyncProducer(brokerList, nil)
 
@@ -80,12 +71,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
     producer.Close()
   }
-
-  // Return options:
-  //
-  // output.FLB_OK    = data have been processed.
-  // output.FLB_ERROR = unrecoverable error, do not try this again.
-  // output.FLB_RETRY = retry to flush later.
   return output.FLB_OK
 }
 
@@ -94,29 +79,15 @@ func encode_as_json(m interface {}) ([]byte, error) {
   timestamp := slice.Index(0).Interface().(uint64)
   record := slice.Index(1).Interface().(map[interface{}] interface{})
 
-  // convert from map[interface{}] interface{} to map[string] interface{}
-  // as JSON encoder can't encode non-string keys
-  // record2 := make(map[string] string)
   record2 := make(map[string] interface{})
   for _, v := range record {
     if val, ok := v.([]byte); ok {
-      // convert byte array to string
       v2 := string(val)
-      // record2[k.(string)] = v2
-      record2["key"] = v2
-      // var i interface{} = "hello"
-      // v = i
+      record2[k.(string)] = v2
     } else {
-      // record2[k.(string)] = v
-      record2["key"] = v
+      record2[k.(string)] = v
     }
-    // str_v := string(v)
-    // str_v, _ := string(v.([]byte))
-    // record2[k.(string)] = v2
   }
-
-  // TODO
-  // add timestamp to record2, Marshal record2, remove log from
 
   type Log struct {
     Time uint64
@@ -144,11 +115,6 @@ func encode_as_msgpack(m interface {}) ([]byte, error) {
   return b, err
 }
 
-// func encode_as_string(m interface {}) ([]byte, error) {
-
-// }
-
-// export FLBPluginExit
 func FLBPluginExit() int {
   return 0
 }
