@@ -81,7 +81,7 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   record2 := make(map[string] interface{})
   for _, v := range record {
-    if val, ok := v.([]uint8); ok {
+    if val, ok := v.([]byte); ok {
       v2 := string(val)
       record2[k.(string)] = v2
     } else {
