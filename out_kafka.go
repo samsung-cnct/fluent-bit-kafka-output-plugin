@@ -61,10 +61,10 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     // 
 
     // Send message to kafka
-    // brokerList := []string{"localhost:9092"}
+    brokerList := []string{"localhost:9092"}
     // brokerList := []string{"kafka:9092"}
     // brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092, kafka-1.kafka.default.svc.cluster.local:9092, kafka-2.kafka.default.svc.cluster.local:9092"}
-    brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
+    // brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
     producer, err := sarama.NewSyncProducer(brokerList, nil)
 
     if err != nil {
@@ -96,9 +96,18 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   // convert from map[interface{}] interface{} to map[string] interface{}
   // as JSON encoder can't encode non-string keys
-  record2 := make(map[string] string)
+  // record2 := make(map[string] string)
+  record2 := make(map[string] interface{})
   for k, v := range record {
-    record2[k.(string)] = v.(string)
+    if val, ok := v.([]byte); ok {
+      // convert byte array to string
+      v = string(val)
+      // var i interface{} = "hello"
+      // v = i
+    }
+    // str_v := string(v)
+    // str_v, _ := string(v.([]byte))
+    record2[k.(string)] = v
   }
 
   // TODO
@@ -106,7 +115,7 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   type Log struct {
     Time uint64
-    Record map[string] string
+    Record map[string] interface{}
   }
 
   log := Log {
