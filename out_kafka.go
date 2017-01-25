@@ -89,30 +89,18 @@ func encode_as_json(m interface {}) ([]byte, error) {
     }
   }
 
-// func encode_as_json(m interface {}) ([]byte, error) {
-//   slice := reflect.ValueOf(m)
-//   timestamp := slice.Index(0).Interface().(uint64)
-//   record := slice.Index(1).Interface().(map[interface{}] interface{})
+  type Log struct {
+    Time uint64
+    Record map[string] interface{}
+  }
 
-//   // convert from map[interface{}] interface{} to map[string] interface{}
-//   // as JSON encoder can't encode non-string keys
-//   record2 := make(map[string] interface{})
-//   for k, v := range record {
-//     record2[k.(string)] = v
-//   }
+  log := Log {
+    Time: timestamp,
+    Record: record2,
+  }
 
-//   type Log struct {
-//     Time uint64
-//     Record map[string] interface{}
-//   }
-
-//   log := Log {
-//     Time: timestamp,
-//     Record: record2,
-//   }
-
-//   return json.Marshal(log)
-// }
+  return json.Marshal(log)
+}
 
 
 func encode_as_msgpack(m interface {}) ([]byte, error) {
