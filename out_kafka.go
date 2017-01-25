@@ -41,7 +41,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     }
 
     // select format until config files are available for fluentbit
-    format := "test"
+    format := "json"
 
     if format == "json" {
       enc_data, err = encode_as_json(m)
@@ -74,20 +74,20 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   return output.FLB_OK
 }
 
-// func encode_as_json(m interface {}) ([]byte, error) {
-//   slice := reflect.ValueOf(m)
-//   timestamp := slice.Index(0).Interface().(uint64)
-//   record := slice.Index(1).Interface().(map[interface{}] interface{})
+func encode_as_json(m interface {}) ([]byte, error) {
+  slice := reflect.ValueOf(m)
+  timestamp := slice.Index(0).Interface().(uint64)
+  record := slice.Index(1).Interface().(map[interface{}] interface{})
 
-//   record2 := make(map[string] interface{})
-//   for k, v := range record {
-//     if val, ok := v.([]byte); ok {
-//       v2 := string(val)
-//       record2[k.(string)] = v2
-//     } else {
-//       record2[k.(string)] = v
-//     }
-//   }
+  record2 := make(map[string] interface{})
+  for k, v := range record {
+    if val, ok := v.([]byte); ok {
+      v2 := string(val)
+      record2[k.(string)] = v2
+    } else {
+      record2[k.(string)] = v
+    }
+  }
 
 // func encode_as_json(m interface {}) ([]byte, error) {
 //   slice := reflect.ValueOf(m)
@@ -114,40 +114,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 //   return json.Marshal(log)
 // }
 
-
-func encode_as_json(m interface {}) ([]byte, error) {
-  // slice := reflect.ValueOf(m)
-  // timestamp := slice.Index(0).Interface().(uint64)
-  // record := slice.Index(1).Interface().(map[interface{}] interface{})
-
-  // // convert from map[interface{}] interface{} to map[string] interface{}
-  // // as JSON encoder can't encode non-string keys
-  // record2 := make(map[string] interface{})
-  // for k, v := range record {
-  //   record2[k.(string)] = v
-  // }
-
-  type Log struct {
-    Time uint64
-    Record map[string] interface{}
-  }
-
-  var inter interface{} 
-  inter = "a string potato"
-
-  var timestamp interface{} 
-  timestamp = 123456
-
-  record2 := make(map[string] interface{})
-  record2["keyz"] = inter
-
-  log := Log {
-    Time: timestamp,
-    Record: record2,
-  }
-
-  return json.Marshal(log)
-}
 
 func encode_as_msgpack(m interface {}) ([]byte, error) {
   var (
