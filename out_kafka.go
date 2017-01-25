@@ -74,19 +74,31 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   return output.FLB_OK
 }
 
+// func encode_as_json(m interface {}) ([]byte, error) {
+//   slice := reflect.ValueOf(m)
+//   timestamp := slice.Index(0).Interface().(uint64)
+//   record := slice.Index(1).Interface().(map[interface{}] interface{})
+
+//   record2 := make(map[string] interface{})
+//   for k, v := range record {
+//     if val, ok := v.([]byte); ok {
+//       v2 := string(val)
+//       record2[k.(string)] = v2
+//     } else {
+//       record2[k.(string)] = v
+//     }
+//   }
+
 func encode_as_json(m interface {}) ([]byte, error) {
   slice := reflect.ValueOf(m)
   timestamp := slice.Index(0).Interface().(uint64)
   record := slice.Index(1).Interface().(map[interface{}] interface{})
 
+  // convert from map[interface{}] interface{} to map[string] interface{}
+  // as JSON encoder can't encode non-string keys
   record2 := make(map[string] interface{})
-  for _, v := range record {
-    if val, ok := v.([]byte); ok {
-      v2 := string(val)
-      record2[k.(string)] = v2
-    } else {
-      record2[k.(string)] = v
-    }
+  for k, v := range record {
+    record2[k.(string)] = v
   }
 
   type Log struct {
