@@ -61,10 +61,10 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     // 
 
     // Send message to kafka
-    brokerList := []string{"localhost:9092"}
+    // brokerList := []string{"localhost:9092"}
     // brokerList := []string{"kafka:9092"}
     // brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092, kafka-1.kafka.default.svc.cluster.local:9092, kafka-2.kafka.default.svc.cluster.local:9092"}
-    // brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
+    brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
     producer, err := sarama.NewSyncProducer(brokerList, nil)
 
     if err != nil {
@@ -73,7 +73,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     }
 
     producer.SendMessage(&sarama.ProducerMessage {
-      Topic: "test",
+      Topic: "logs_default",
       Key:   nil,
       Value: sarama.ByteEncoder(enc_data),
     })
