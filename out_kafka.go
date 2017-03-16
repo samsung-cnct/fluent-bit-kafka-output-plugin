@@ -12,9 +12,14 @@ import (
   "C"
 )
 
+//export FLBPluginRegister
+func FLBPluginRegister(ctx unsafe.Pointer) int {
+    return output.FLBPluginRegister(ctx, "out_kafka", "out_kafka GO!")
+}
+
 //export FLBPluginInit
 func FLBPluginInit(ctx unsafe.Pointer) int {
-    return output.FLBPluginRegister(ctx, "out_kafka", "out_kafka GO!")
+    return output.FLB_OK
 }
 
 //export FLBPluginFlush
