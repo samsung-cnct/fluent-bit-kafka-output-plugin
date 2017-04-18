@@ -45,6 +45,8 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       return output.FLB_ERROR
     }
 
+    fmt.Printf("Ducks: %v\n", m)
+
     // select format until config files are available for fluentbit
     format := "json"
 
@@ -60,7 +62,9 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       fmt.Printf("Failed to encode %s data: %v\n", format, err)
       return output.FLB_ERROR
     }
+
     brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
+    // brokerList := []string{"localhost:9092"}
     producer, err := sarama.NewSyncProducer(brokerList, nil)
 
     if err != nil {
@@ -69,7 +73,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     }
 
     producer.SendMessage(&sarama.ProducerMessage {
-      Topic: "logs_default",
+      Topic: "test",
       Key:   nil,
       Value: sarama.ByteEncoder(enc_data),
     })
