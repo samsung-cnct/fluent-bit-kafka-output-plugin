@@ -30,8 +30,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   var err error
   var enc_data []byte
 
-  fmt.Printf("Chickens: Out Kafka has started\n")
-  fmt.Printf("Pigeon: %v\n", m)
+  fmt.Printf("[OUTPUT]: Out Kafka has started\n")
 
   b = C.GoBytes(data, length)
   dec := codec.NewDecoderBytes(b, h)
@@ -87,11 +86,16 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 }
 
 func encode_as_json(m interface {}) ([]byte, error) {
+  fmt.Printf("[OUTPUT]: 1\n")
   slice := reflect.ValueOf(m)
+  fmt.Printf("[OUTPUT]: 2\n")
   timestamp := slice.Index(0).Interface().(uint64)
+  fmt.Printf("[OUTPUT]: 3\n")
   record := slice.Index(1).Interface().(map[interface{}] interface{})
+  fmt.Printf("[OUTPUT]: 4\n")
 
   record2 := make(map[string] interface{})
+  fmt.Printf("[OUTPUT]: 5\n")
   for k, v := range record {
     if val, ok := v.([]byte); ok {
       v2 := string(val)
