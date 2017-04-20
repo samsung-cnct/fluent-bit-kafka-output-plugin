@@ -86,32 +86,33 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 }
 
 func encode_as_json(m interface {}) ([]byte, error) {
-  fmt.Printf("[OUTPUT]: 1\n")
-  fmt.Printf("M: %v\n", m)
   slice := reflect.ValueOf(m)
-  fmt.Printf("Slice: %v\n", slice)
-  fmt.Printf("[OUTPUT]: 2\n")
-  fmt.Printf("SliceIndex(0): %v\n", slice.Index(0))
-  // timestamp := slice.Index(0).Interface().(uint64)
-  timestamp := 180
-  fmt.Printf("[OUTPUT]: 3\n")
+  fmt.Printf("Slice: %T, %v\n", slice, slice)
+  fmt.Printf("SliceIndex(0): %T %v\n", slice.Index(0).Interface(), slice.Index(0))
+  timestamp := slice.Index(0).Interface().(uint64)
   record := slice.Index(1).Interface().(map[interface{}] interface{})
-  fmt.Printf("[OUTPUT]: 4\n")
 
+  // record is map of interface to interfaces, which the json Marshaler will
+  // not encode automagically. we need to iterate over it, and create a new
+  // map of strings to interfaces that the json Marshaler can handle
   record2 := make(map[string] interface{})
-  fmt.Printf("[OUTPUT]: 5\n")
+
   for k, v := range record {
+    // k is always a string type
+    key := k.(string)
+
+    // v will be a raw byte array if it's a string coming from msgpack, convert
+    // to a higher level string type in this case such that the json Marshaler
+    // can understand what the value is
     if val, ok := v.([]byte); ok {
-      v2 := string(val)
-      record2[k.(string)] = v2
+      record2[key] = string(val)
     } else {
-      record2[k.(string)] = v
+      record2[key] = v
     }
   }
 
   type Log struct {
-    // Time uint64
-    Time int
+    Time uint64
     Record map[string] interface{}
   }
 
