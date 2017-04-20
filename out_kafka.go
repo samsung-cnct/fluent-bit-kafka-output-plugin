@@ -87,8 +87,11 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 func encode_as_json(m interface {}) ([]byte, error) {
   fmt.Printf("[OUTPUT]: 1\n")
+  fmt.Printf("M: %v\n", m)
   slice := reflect.ValueOf(m)
+  fmt.Printf("Slice: %v\n", slice)
   fmt.Printf("[OUTPUT]: 2\n")
+  fmt.Printf("SliceIndex(0): %v\n", slice.Index(0))
   timestamp := slice.Index(0).Interface().(uint64)
   fmt.Printf("[OUTPUT]: 3\n")
   record := slice.Index(1).Interface().(map[interface{}] interface{})
