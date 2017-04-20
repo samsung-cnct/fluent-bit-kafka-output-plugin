@@ -31,6 +31,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   var enc_data []byte
 
   fmt.Printf("Chickens: Out Kafka has started\n")
+  fmt.Printf("Pigeon: %v\n", m)
 
   b = C.GoBytes(data, length)
   dec := codec.NewDecoderBytes(b, h)
