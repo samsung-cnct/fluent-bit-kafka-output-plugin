@@ -24,7 +24,9 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
-  var h codec.Handle = new(codec.MsgpackHandle)
+  var h codec.MsgpackHandle
+  h.WriteExt = true
+
   var b []byte
   var m interface{}
   var err error
@@ -33,7 +35,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   fmt.Printf("[OUTPUT]: Out Kafka has started\n")
 
   b = C.GoBytes(data, length)
-  dec := codec.NewDecoderBytes(b, h)
+  dec := codec.NewDecoderBytes(b, &h)
 
   // Iterate the original MessagePack array
   for {
@@ -96,19 +98,8 @@ func encode_as_json(m interface {}) ([]byte, error) {
   // not encode automagically. we need to iterate over it, and create a new
   // map of strings to interfaces that the json Marshaler can handle
   record2 := make(map[string] interface{})
-
   for k, v := range record {
-    // k is always a string type
-    key := k.(string)
-
-    // v will be a raw byte array if it's a string coming from msgpack, convert
-    // to a higher level string type in this case such that the json Marshaler
-    // can understand what the value is
-    if val, ok := v.([]byte); ok {
-      record2[key] = string(val)
-    } else {
-      record2[key] = v
-    }
+    record2[k.(string)] = v
   }
 
   type Log struct {
