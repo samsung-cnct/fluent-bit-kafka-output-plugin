@@ -110,7 +110,8 @@ func encode_as_json(m interface {}) ([]byte, error) {
   }
 
   type Log struct {
-    Time uint64
+    // Time uint64
+    Time int
     Record map[string] interface{}
   }
 
