@@ -92,7 +92,8 @@ func encode_as_json(m interface {}) ([]byte, error) {
   fmt.Printf("Slice: %v\n", slice)
   fmt.Printf("[OUTPUT]: 2\n")
   fmt.Printf("SliceIndex(0): %v\n", slice.Index(0))
-  timestamp := slice.Index(0).Interface().(uint64)
+  // timestamp := slice.Index(0).Interface().(uint64)
+  timestamp := 180
   fmt.Printf("[OUTPUT]: 3\n")
   record := slice.Index(1).Interface().(map[interface{}] interface{})
   fmt.Printf("[OUTPUT]: 4\n")
