@@ -25,6 +25,7 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   var h codec.MsgpackHandle
+  h.RawToString = true
   h.WriteExt = true
 
   var b []byte
