@@ -79,7 +79,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     }
 
     producer.SendMessage(&sarama.ProducerMessage {
-      Topic: "test",
+      Topic: "logs_default",
       Key:   nil,
       Value: sarama.ByteEncoder(enc_data),
     })
@@ -97,6 +97,7 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   timestamp := slice.Index(0).Interface().(uint64)
   record := slice.Index(1).Interface().(map[interface{}] interface{})
+
 
   // record is map of interface to interfaces, which the json Marshaler will
   // not encode automagically. we need to iterate over it, and create a new
