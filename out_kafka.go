@@ -55,9 +55,10 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
     // select format until config files are available for fluentbit
     format := "json"
-
+    fmt.Printf("DUDA: %v\n", m)
     if format == "json" {
       enc_data, err = encode_as_json(m)
+      fmt.Printf("DOODE: %v\n", enc_data)
       //enc_data, err = m
     } else if format == "msgpack" {
       enc_data, err = encode_as_msgpack(m)
@@ -109,9 +110,6 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
     record2[k.(string)] = v
   }
-
-  
-  // record3, err := base64.StdEncoding.DecodeString(record2)
 
   type Log struct {
     Time uint64
