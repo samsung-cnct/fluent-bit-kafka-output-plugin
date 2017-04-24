@@ -107,6 +107,8 @@ func encode_as_json(m interface {}) ([]byte, error) {
     record2[k.(string)] = v
   }
 
+  record3, err := base64.StdEncoding.DecodeString(record2)
+
   type Log struct {
     Time uint64
     Record map[string] interface{}
@@ -114,7 +116,7 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   log := Log {
     Time: timestamp,
-    Record: record2,
+    Record: record3,
   }
 
   return json.Marshal(log)
