@@ -55,10 +55,10 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
     // select format until config files are available for fluentbit
     format := "json"
-    fmt.Printf("DUDA: %v\n", m)
+    fmt.Printf("DUDA: %v, %v\n", reflect.TypeOf(m), m)
     if format == "json" {
       enc_data, err = encode_as_json(m)
-      fmt.Printf("DOODE: %v\n", enc_data)
+      fmt.Printf("DOODE: %v, %v\n", reflect.TypeOf(enc_data), enc_data)
       //enc_data, err = m
     } else if format == "msgpack" {
       enc_data, err = encode_as_msgpack(m)
