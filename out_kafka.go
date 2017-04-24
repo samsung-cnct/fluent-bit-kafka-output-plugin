@@ -107,10 +107,10 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
     // why is this base64???????
 
-    record2[k.(string)] = v.(string)
+    record2[k.(string)] = v
   }
 
-
+  
   // record3, err := base64.StdEncoding.DecodeString(record2)
 
   type Log struct {
