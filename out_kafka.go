@@ -102,23 +102,16 @@ func encode_as_json(m interface {}) ([]byte, error) {
   // record is map of interface to interfaces, which the json Marshaler will
   // not encode automagically. we need to iterate over it, and create a new
   // map of strings to interfaces that the json Marshaler can handle
-  // record2 := make(map[string] interface{})
-  // for k, v := range record {
-
-  //   // why is this base64???????
-
-  //   record2[k.(string)] = v
-  // }
-
   record2 := make(map[string] interface{})
   for k, v := range record {
-    if val, ok := v.([]byte); ok {
-      v2 := string(val)
-      record2[k.(string)] = v2
-    } else {
-      record2[k.(string)] = v
-    }
+
+    // why is this base64???????
+
+    record2[k.(string)] = v.(string)
   }
+
+
+  // record3, err := base64.StdEncoding.DecodeString(record2)
 
   type Log struct {
     Time uint64
