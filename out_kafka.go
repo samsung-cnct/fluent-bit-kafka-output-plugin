@@ -8,7 +8,7 @@ import (
   "reflect"
   "unsafe"
   "fmt"
-  "io" 
+  "io"
   "C"
 )
 
@@ -25,9 +25,6 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   var h codec.MsgpackHandle
-  // h.RawToString = true
-  h.WriteExt = true
-  // h.SetExt(reflect.TypeOf(time.Time{}), 1, myExt)
 
   var b []byte
   var m interface{}
@@ -41,7 +38,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
   // Iterate the original MessagePack array
   for {
-    // Decode the msgpack data
+    // decode the msgpack data
     err = dec.Decode(&m)
     if err != nil {
       if err == io.EOF {
@@ -51,15 +48,11 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       return output.FLB_ERROR
     }
 
-    // fmt.Printf("Ducks: %v\n", m)
-
     // select format until config files are available for fluentbit
     format := "json"
-    fmt.Printf("DUDA: %v, %v\n", reflect.TypeOf(m), m)
+
     if format == "json" {
       enc_data, err = encode_as_json(m)
-      fmt.Printf("DOODE: %v, %v\n", reflect.TypeOf(enc_data), enc_data)
-      //enc_data, err = m
     } else if format == "msgpack" {
       enc_data, err = encode_as_msgpack(m)
     } else if format == "string" {
@@ -92,23 +85,22 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 func encode_as_json(m interface {}) ([]byte, error) {
   slice := reflect.ValueOf(m)
-  // fmt.Printf("Slice DOG: %T, %v\n", slice, slice)
-  // fmt.Printf("SliceIndex(0): %T %v\n", slice.Index(0).Interface(), slice.Index(0))
-  // fmt.Printf("SliceIndex(1): %T %v\n", slice.Index(1).Interface(), slice.Index(1))
-
   timestamp := slice.Index(0).Interface().(uint64)
   record := slice.Index(1).Interface().(map[interface{}] interface{})
-
 
   // record is map of interface to interfaces, which the json Marshaler will
   // not encode automagically. we need to iterate over it, and create a new
   // map of strings to interfaces that the json Marshaler can handle
   record2 := make(map[string] interface{})
   for k, v := range record {
-
-    // why is this base64???????
-
-    record2[k.(string)] = v
+    // convert C-style string to go string, else the JSON encoder will attempt
+    // to base64 encode the array
+    if val, ok := v.([]byte); ok {
+      v2 := string(val)
+      record2[k.(string)] = v2
+    } else {
+      record2[k.(string)] = v
+    }
   }
 
   type Log struct {
@@ -123,7 +115,6 @@ func encode_as_json(m interface {}) ([]byte, error) {
 
   return json.Marshal(log)
 }
-
 
 func encode_as_msgpack(m interface {}) ([]byte, error) {
   var (
