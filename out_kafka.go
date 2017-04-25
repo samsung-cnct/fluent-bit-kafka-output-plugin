@@ -103,6 +103,7 @@ func encode_as_json(m interface {}) ([]byte, error) {
     }
   }
 
+  fmt.Printf("Poopers: %v\n", record2)
   type Log struct {
     Time uint64
     Record map[string] interface{}
