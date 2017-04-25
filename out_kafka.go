@@ -83,39 +83,55 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   return output.FLB_OK
 }
 
-func encode_as_json(m interface {}) ([]byte, error) {
-  slice := reflect.ValueOf(m)
-  timestamp := slice.Index(0).Interface().(uint64)
-  record := slice.Index(1).Interface().(map[interface{}] interface{})
-
   // record is map of interface to interfaces, which the json Marshaler will
   // not encode automagically. we need to iterate over it, and create a new
   // map of strings to interfaces that the json Marshaler can handle
+func prepare_data(record interface{}) interface{} {
+  // base case, 
+  // if val is map, return
+  r, ok := record.(map[interface{}] interface{})
+
+  if ok != true {
+    return record
+  }
+
   record2 := make(map[string] interface{})
-  for k, v := range record {
+  for k, v := range r {
+    key_string := k.(string)
     // convert C-style string to go string, else the JSON encoder will attempt
     // to base64 encode the array
     if val, ok := v.([]byte); ok {
+      // if it IS a byte array, make string
       v2 := string(val)
-      record2[k.(string)] = v2
+      // add to new record map
+      record2[key_string] = v2
     } else {
-      record2[k.(string)] = v
+      // if not, recurse to decode interface &
+      // add to new record map
+      record2[key_string] = prepare_data(v)
     }
   }
 
-  fmt.Printf("Poopers: %v\n", record2)
+  return record2
+}
+
+func encode_as_json(m interface {}) ([]byte, error) {
+  slice := reflect.ValueOf(m)
+  timestamp := slice.Index(0).Interface().(uint64)
+  record := slice.Index(1).Interface()
+
   type Log struct {
     Time uint64
-    Record map[string] interface{}
+    Record interface{}
   }
 
   log := Log {
     Time: timestamp,
-    Record: record2,
+    Record: prepare_data(record),
   }
 
   return json.Marshal(log)
-}
+} 
 
 func encode_as_msgpack(m interface {}) ([]byte, error) {
   var (
