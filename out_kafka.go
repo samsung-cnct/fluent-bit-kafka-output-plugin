@@ -12,14 +12,25 @@ import (
   "C"
 )
 
+var brokerList []string = []string{"localhost:9092"}
+var producer sarama.SyncProducer
+
 //export FLBPluginRegister
 func FLBPluginRegister(ctx unsafe.Pointer) int {
-    return output.FLBPluginRegister(ctx, "out_kafka", "out_kafka GO!")
+  return output.FLBPluginRegister(ctx, "out_kafka", "out_kafka GO!")
 }
 
 //export FLBPluginInit
 func FLBPluginInit(ctx unsafe.Pointer) int {
-    return output.FLB_OK
+  var err error
+  producer, err = sarama.NewSyncProducer(brokerList, nil)
+
+  if err != nil {
+    fmt.Printf("Failed to start Sarama producer: %v\n", err)
+    return output.FLB_ERROR
+  }
+
+  return output.FLB_OK
 }
 
 //export FLBPluginFlush
@@ -63,14 +74,12 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       return output.FLB_ERROR
     }
 
-    brokerList := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
-    // brokerList := []string{"localhost:9092"}
-    producer, err := sarama.NewSyncProducer(brokerList, nil)
+    // BROKERLIST := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
 
-    if err != nil {
-      fmt.Printf("Failed to start Sarama producer: %v\n", err)
-      return output.FLB_ERROR
-    }
+    // producer, err := sarama.NewSyncProducer(BROKERLIST, nil)
+    // fmt.Printf("Ponies!")
+    // fmt.Println(reflect.TypeOf(producer))
+
 
     producer.SendMessage(&sarama.ProducerMessage {
       Topic: "logs_default",
@@ -80,7 +89,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
     
     fmt.Printf("%v", enc_data)
 
-    producer.Close()
+    // producer.Close()
   }
   return output.FLB_OK
 }
