@@ -87,7 +87,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       Value: sarama.ByteEncoder(enc_data),
     })
     
-    fmt.Printf("%v", enc_data)
+    // fmt.Printf("%v", enc_data)
 
     // producer.Close()
   }
