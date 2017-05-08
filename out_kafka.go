@@ -42,8 +42,6 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
   var err error
   var enc_data []byte
 
-  // fmt.Printf("[OUTPUT]: Out Kafka has started\n")
-
   b = C.GoBytes(data, length)
   dec := codec.NewDecoderBytes(b, &h)
 
@@ -74,22 +72,12 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
       return output.FLB_ERROR
     }
 
-    // BROKERLIST := []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
-
-    // producer, err := sarama.NewSyncProducer(BROKERLIST, nil)
-    // fmt.Printf("Ponies!")
-    // fmt.Println(reflect.TypeOf(producer))
-
-
     producer.SendMessage(&sarama.ProducerMessage {
       Topic: "logs_default",
       Key:   nil,
       Value: sarama.ByteEncoder(enc_data),
     })
     
-    // fmt.Printf("%v", enc_data)
-
-    // producer.Close()
   }
   return output.FLB_OK
 }
