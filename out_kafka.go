@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"time"
 	"unsafe"
 
 	"github.com/Shopify/sarama"
 	"github.com/fluent/fluent-bit-go/output"
 	"github.com/ugorji/go/codec"
 )
+import "log"
 
 var brokerList []string = []string{"localhost:9092"}
 var producer sarama.SyncProducer
@@ -25,13 +27,28 @@ func FLBPluginRegister(ctx unsafe.Pointer) int {
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	var err error
 	producer, err = sarama.NewSyncProducer(brokerList, nil)
-
+	waitForKafka(err)
 	if err != nil {
 		fmt.Printf("Failed to start Sarama producer: %v\n", err)
 		return output.FLB_ERROR
 	}
 
 	return output.FLB_OK
+}
+
+// If kafka/zookeeper is not running, give it some time to connect before an error occurs
+func waitForKafka(e error) error {
+	const timeout = 10 * time.Minute
+	deadline := time.Now().Add(timeout)
+	for tries := 0; time.Now().Before(deadline); tries++ {
+		err := e
+		if err == nil {
+			return nil
+		}
+		log.Printf("Cannot connect to Kafka: (%s)\n retrying...", err)
+		time.Sleep(time.Minute)
+	}
+	return fmt.Errorf("Kafka failed to respond after %s", timeout)
 }
 
 //export FLBPluginFlush
