@@ -15,7 +15,7 @@ import (
 	"github.com/ugorji/go/codec"
 )
 
-var brokerList []string = []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
+var brokerList = []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
 var producer sarama.SyncProducer
 
 //export FLBPluginRegister
@@ -48,7 +48,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	var b []byte
 	var m interface{}
 	var err error
-	var enc_data []byte
+	var encData []byte
 
 	b = C.GoBytes(data, length)
 	dec := codec.NewDecoderBytes(b, &h)
@@ -69,11 +69,11 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		format := "json"
 
 		if format == "json" {
-			enc_data, err = encode_as_json(m)
+			encData, err = encodeAsJson(m)
 		} else if format == "msgpack" {
-			enc_data, err = encode_as_msgpack(m)
+			encData, err = encodeAsMsgpack(m)
 		} else if format == "string" {
-			// enc_data, err == encode_as_string(m)
+			// encData, err == encode_as_string(m)
 		}
 		if err != nil {
 			fmt.Printf("Failed to encode %s data: %v\n", format, err)
@@ -83,7 +83,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		producer.SendMessage(&sarama.ProducerMessage{
 			Topic: "logs_default",
 			Key:   nil,
-			Value: sarama.ByteEncoder(enc_data),
+			Value: sarama.ByteEncoder(encData),
 		})
 
 	}
@@ -93,7 +93,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 // record is map of interface to interfaces, which the json Marshaler will
 // not encode automagically. we need to iterate over it, and create a new
 // map of strings to interfaces that the json Marshaler can handle
-func prepare_data(record interface{}) interface{} {
+func prepareData(record interface{}) interface{} {
 	// base case,
 	// if val is map, return
 	r, ok := record.(map[interface{}]interface{})
@@ -104,25 +104,25 @@ func prepare_data(record interface{}) interface{} {
 
 	record2 := make(map[string]interface{})
 	for k, v := range r {
-		key_string := k.(string)
+		keyString := k.(string)
 		// convert C-style string to go string, else the JSON encoder will attempt
 		// to base64 encode the array
 		if val, ok := v.([]byte); ok {
 			// if it IS a byte array, make string
 			v2 := string(val)
 			// add to new record map
-			record2[key_string] = v2
+			record2[keyString] = v2
 		} else {
 			// if not, recurse to decode interface &
 			// add to new record map
-			record2[key_string] = prepare_data(v)
+			record2[keyString] = prepareData(v)
 		}
 	}
 
 	return record2
 }
 
-func encode_as_json(m interface{}) ([]byte, error) {
+func encodeAsJson(m interface{}) ([]byte, error) {
 	slice := reflect.ValueOf(m)
 	timestamp := slice.Index(0).Interface().(uint64)
 	record := slice.Index(1).Interface()
@@ -134,13 +134,13 @@ func encode_as_json(m interface{}) ([]byte, error) {
 
 	log := Log{
 		Time:   timestamp,
-		Record: prepare_data(record),
+		Record: prepareData(record),
 	}
 
 	return json.Marshal(log)
 }
 
-func encode_as_msgpack(m interface{}) ([]byte, error) {
+func encodeAsMsgpack(m interface{}) ([]byte, error) {
 	var (
 		mh codec.MsgpackHandle
 		w  io.Writer
