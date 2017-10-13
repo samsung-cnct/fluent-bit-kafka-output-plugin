@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"reflect"
 	"time"
 	"unsafe"
@@ -13,7 +14,6 @@ import (
 	"github.com/fluent/fluent-bit-go/output"
 	"github.com/ugorji/go/codec"
 )
-import "log"
 
 var brokerList []string = []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
 var producer sarama.SyncProducer
