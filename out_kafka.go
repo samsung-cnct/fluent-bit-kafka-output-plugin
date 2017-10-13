@@ -18,6 +18,8 @@ import (
 var brokerList = []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
 var producer sarama.SyncProducer
 
+const timeout = 15 * time.Minute
+
 //export FLBPluginRegister
 func FLBPluginRegister(ctx unsafe.Pointer) int {
 	return output.FLBPluginRegister(ctx, "out_kafka", "out_kafka GO!")
@@ -26,8 +28,8 @@ func FLBPluginRegister(ctx unsafe.Pointer) int {
 //export FLBPluginInit
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	var err error
+
 	// If Kafka is not running on init, wait to connect
-	const timeout = 15 * time.Minute
 	deadline := time.Now().Add(timeout)
 	for tries := 0; time.Now().Before(deadline); tries++ {
 		producer, err = sarama.NewSyncProducer(brokerList, nil)
