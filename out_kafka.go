@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Adapted from https://github.com/fluent/fluent-bit/blob/master/GOLANG_OUTPUT_PLUGIN.md
+
 package main
 
 import (
@@ -31,8 +33,7 @@ import (
 
 var brokerList = []string{"kafka-0.kafka.default.svc.cluster.local:9092"}
 var producer sarama.SyncProducer
-
-const timeout = 15 * time.Minute
+var timeout = 0 * time.Minute
 
 //export FLBPluginRegister
 func FLBPluginRegister(ctx unsafe.Pointer) int {
@@ -43,10 +44,15 @@ func FLBPluginRegister(ctx unsafe.Pointer) int {
 func FLBPluginInit(ctx unsafe.Pointer) int {
 	var err error
 
+	if timeout == 0 {
+		timeout = 5 * time.Minute
+	}
 	// If Kafka is not running on init, wait to connect
 	deadline := time.Now().Add(timeout)
 	for tries := 0; time.Now().Before(deadline); tries++ {
-		producer, err = sarama.NewSyncProducer(brokerList, nil)
+		if producer == nil {
+			producer, err = sarama.NewSyncProducer(brokerList, nil)
+		}
 		if err == nil {
 			return output.FLB_OK
 		}
@@ -84,13 +90,15 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 		// select format until config files are available for fluentbit
 		format := "json"
 
-		if format == "json" {
+		switch format {
+		case "json":
 			encData, err = encodeAsJson(m)
-		} else if format == "msgpack" {
+		case "msgpack":
 			encData, err = encodeAsMsgpack(m)
-		} else if format == "string" {
+		case "string":
 			// encData, err == encode_as_string(m)
 		}
+
 		if err != nil {
 			fmt.Printf("Failed to encode %s data: %v\n", format, err)
 			return output.FLB_ERROR
