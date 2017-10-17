@@ -1,0 +1,3 @@
+fluent-bit-kafka-output-plugin
+out_kafka.h
+out_kafka.so
