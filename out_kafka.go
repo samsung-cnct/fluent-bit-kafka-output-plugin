@@ -47,6 +47,7 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 	if timeout == 0 {
 		timeout = 5 * time.Minute
 	}
+
 	// If Kafka is not running on init, wait to connect
 	deadline := time.Now().Add(timeout)
 	for tries := 0; time.Now().Before(deadline); tries++ {
