@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"reflect"
 	"time"
 	"unsafe"
 
@@ -66,52 +65,49 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
-	var h codec.MsgpackHandle
+	// var h codec.handle = new(codec.MsgpackHandle)
 
-	var b []byte
-	var m interface{}
+	var ret int
+	var ts interface{}
 	var err error
+	var record map[interface{}]interface{}
 	var encData []byte
 
-	b = C.GoBytes(data, length)
-	dec := codec.NewDecoderBytes(b, &h)
+	// b = C.GoBytes(data, length)
+	dec := output.NewDecoder(data, int(length))
 
 	// Iterate the original MessagePack array
 	for {
-		// decode the msgpack data
-		err = dec.Decode(&m)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			fmt.Printf("Failed to decode msgpack data: %v\n", err)
-			return output.FLB_ERROR
+		// Extract Record
+		ret, ts, record = output.FLBGetRecord(dec)
+		if ret == 0 {
+			break
 		}
-
-		// select format until config files are available for fluentbit
-		format := "json"
-
-		switch format {
-		case "json":
-			encData, err = encodeAsJson(m)
-		case "msgpack":
-			encData, err = encodeAsMsgpack(m)
-		case "string":
-			// encData, err == encode_as_string(m)
-		}
-
-		if err != nil {
-			fmt.Printf("Failed to encode %s data: %v\n", format, err)
-			return output.FLB_ERROR
-		}
-
-		producer.SendMessage(&sarama.ProducerMessage{
-			Topic: "logs_default",
-			Key:   nil,
-			Value: sarama.ByteEncoder(encData),
-		})
-
 	}
+
+	// select format until config files are available for fluentbit
+	format := "json"
+
+	switch format {
+	case "json":
+		encData, err = encodeAsJson(ts)
+	case "msgpack":
+		encData, err = encodeAsMsgpack(ts)
+	case "string":
+		// encData, err == encode_as_string(m)
+	}
+
+	if err != nil {
+		fmt.Printf("Failed to encode %s data: %v\n", format, err)
+		return output.FLB_ERROR
+	}
+
+	producer.SendMessage(&sarama.ProducerMessage{
+		Topic: "logs_default",
+		Key:   nil,
+		Value: sarama.ByteEncoder(encData),
+	})
+
 	return output.FLB_OK
 }
 
@@ -147,10 +143,8 @@ func prepareData(record interface{}) interface{} {
 	return record2
 }
 
-func encodeAsJson(m interface{}) ([]byte, error) {
-	slice := reflect.ValueOf(m)
-	timestamp := slice.Index(0).Interface().(uint64)
-	record := slice.Index(1).Interface()
+func encodeAsJson(ts interface{}) ([]byte, error) {
+	timestamp := ts.(output.FLBTime)
 
 	type Log struct {
 		Time   uint64
