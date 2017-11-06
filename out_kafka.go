@@ -65,7 +65,6 @@ func FLBPluginInit(ctx unsafe.Pointer) int {
 
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
-	// var h codec.handle = new(codec.MsgpackHandle)
 
 	var ret int
 	var ts interface{}
@@ -73,13 +72,12 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	var record map[interface{}]interface{}
 	var encData []byte
 
-	// b = C.GoBytes(data, length)
 	dec := output.NewDecoder(data, int(length))
 
 	// Iterate the original MessagePack array
 	for {
 		// Extract Record
-		ret, ts, record = output.FLBGetRecord(dec)
+		ret, ts, record = output.GetRecord(dec)
 		if ret == 0 {
 			break
 		}
@@ -90,7 +88,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 
 	switch format {
 	case "json":
-		encData, err = encodeAsJson(ts)
+		encData, err = encodeAsJson(ts, record)
 	case "msgpack":
 		encData, err = encodeAsMsgpack(ts)
 	case "string":
@@ -111,55 +109,23 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	return output.FLB_OK
 }
 
-// record is map of interface to interfaces, which the json Marshaler will
-// not encode automagically. we need to iterate over it, and create a new
-// map of strings to interfaces that the json Marshaler can handle
-func prepareData(record interface{}) interface{} {
-	// base case,
-	// if val is map, return
-	r, ok := record.(map[interface{}]interface{})
-
-	if ok != true {
-		return record
-	}
-
-	record2 := make(map[string]interface{})
-	for k, v := range r {
-		keyString := k.(string)
-		// convert C-style string to go string, else the JSON encoder will attempt
-		// to base64 encode the array
-		if val, ok := v.([]byte); ok {
-			// if it IS a byte array, make string
-			v2 := string(val)
-			// add to new record map
-			record2[keyString] = v2
-		} else {
-			// if not, recurse to decode interface &
-			// add to new record map
-			record2[keyString] = prepareData(v)
-		}
-	}
-
-	return record2
-}
-
-func encodeAsJson(ts interface{}) ([]byte, error) {
+func encodeAsJson(ts interface{}, record map[interface{}]interface{}) ([]byte, error) {
 	timestamp := ts.(output.FLBTime)
 
 	type Log struct {
-		Time   uint64
+		Time   output.FLBTime
 		Record interface{}
 	}
 
 	log := Log{
 		Time:   timestamp,
-		Record: prepareData(record),
+		Record: record,
 	}
 
 	return json.Marshal(log)
 }
 
-func encodeAsMsgpack(m interface{}) ([]byte, error) {
+func encodeAsMsgpack(ts interface{}) ([]byte, error) {
 	var (
 		mh codec.MsgpackHandle
 		w  io.Writer
@@ -168,7 +134,7 @@ func encodeAsMsgpack(m interface{}) ([]byte, error) {
 
 	enc := codec.NewEncoder(w, &mh)
 	enc = codec.NewEncoderBytes(&b, &mh)
-	err := enc.Encode(&m)
+	err := enc.Encode(&ts)
 	return b, err
 }
 
