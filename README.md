@@ -1,4 +1,9 @@
 # fluent-bit-kafka-output-plugin
+
+**NOTE: `fluent-bit` can be built with a `kafka` plugin now. Therefore this 
+plugin and repository have been deprecated. Please see the upstream container
+at https://hub.docker.com/r/fluent/fluent-bit**
+
 Kafka Output Plugin for FluentBit
 
 To deploy as a sidecar in Kubernetes: https://github.com/leahnp/fluentbit-sidecar
